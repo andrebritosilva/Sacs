@@ -7,9 +7,47 @@
 			"name": "TOTVS Language Debug",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "C:/totvs/bin/smartclient/smartclient.exe",
+			"smartclientBin": "C:\\Clientes\\Sacs\\smartclient\\smartclient.exe",
 			"isMultiSession": true,
 			"enableTableSync": true
 		}
-	]
+	],
+	"lastPrograms": [
+		{
+			"args": [],
+			"label": "SIGAFIN",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "SIGACFG",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "apsdu",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "sigactb",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "SIGAAFV",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "SIGAADV",
+			"description": ""
+		},
+		{
+			"args": [],
+			"label": "SIGAEST",
+			"description": ""
+		}
+	],
+	"lastProgramExecuted": "SIGAEST"
 }

@@ -32,8 +32,8 @@ User Function ConsSB6()
 	PutSx1(cPerg,"04","Cliente ou Fornecedor Ate  ?","","","mv_ch4","C",  6,0,0,"G","","","","","mv_par04","","","","","","","","","","","","","","","","",{{"Cliente Final  "}},{{" "}},{{" "}},"")
 	PutSx1(cPerg,"05","Loja  De                   ?","","","mv_ch5","C",  2,0,0,"G","","","","","mv_par05","","","","","","","","","","","","","","","","",{{"Loja    Inicial "}},{{" "}},{{" "}},"")
 	PutSx1(cPerg,"06","Loja  Ate                  ?","","","mv_ch6","C",  2,0,0,"G","","","","","mv_par06","","","","","","","","","","","","","","","","",{{"Loja    Final  "}},{{" "}},{{" "}},"")
-	PutSx1(cPerg,"07","CC Inicial                 ?","","","mv_ch7","C",  9,0,0,"G","","CTT","","","mv_par07","","","","","","","","","","","","","","","","",{{"Produto Inicial "}},{{" "}},{{" "}},"")
-	PutSx1(cPerg,"08","CC Final                   ?","","","mv_ch8","C",  9,0,0,"G","","CTT","","","mv_par08","","","","","","","","","","","","","","","","",{{"Produto Final  "}},{{" "}},{{" "}},"")
+	PutSx1(cPerg,"07","Item Inicial               ?","","","mv_ch7","C",  9,0,0,"G","","CTT","","","mv_par07","","","","","","","","","","","","","","","","",{{"Produto Inicial "}},{{" "}},{{" "}},"")
+	PutSx1(cPerg,"08","Item Final                 ?","","","mv_ch8","C",  9,0,0,"G","","CTT","","","mv_par08","","","","","","","","","","","","","","","","",{{"Produto Final  "}},{{" "}},{{" "}},"")
 	PutSx1(cPerg,"09","Produto Inicial            ?","","","mv_ch9","C", 15,0,0,"G","","SB1","","","mv_par09","","","","","","","","","","","","","","","","",{{"Data Inicial de processamento "}},{{" "}},{{" "}},"")
 	PutSx1(cPerg,"10","Produto Final              ?","","","mv_cha","C", 15,0,0,"G","","SB1","","","mv_par10","","","","","","","","","","","","","","","","",{{"Data Final de processamento   "}},{{" "}},{{" "}},"")
 
@@ -124,8 +124,11 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 Static Function Proc_Arq(cEmp)
-	Local aNomArq := {}
-	Local aArq := {{"SB6"," "},{"SB1"," "}}
+
+	Local aNomArq   := {}
+	Local aArq      := {{"SB6"," "},{"SB1"," "}}
+	Local cCustoIni := GatItem(MV_PAR07)
+	Local cCustoFim := GatItem(MV_PAR08)
 
 	cArq   := "sx2"+cEmp+"0"
 	cAliasTrb := "sx2trb"
@@ -165,6 +168,8 @@ Static Function Proc_Arq(cEmp)
 	cQuery += "	And SB6.B6_CLIFOR BETWEEN '"+MV_PAR03+"' And '"+mv_par04+"'"
 
 	cQuery += "	And SB6.B6_PRODUTO BETWEEN '"+MV_PAR09+"' And '"+mv_par10+"'"
+
+	cQuery += "	And SB6.B6_CC BETWEEN '" + cCustoIni + "' And '" + cCustoFim + "'"
 
 	cQuery += " And SB6.B6_PODER3 = 'R' "
 
@@ -217,8 +222,14 @@ Static Function Proc_Arq(cEmp)
 				cCC := Posicione("SD1",1,xFilial("SD1")+QRY->B6_DOC+QRY->B6_SERIE+QRY->B6_CLIFOR+QRY->B6_LOJA,"D1_CC")
 			EndIf
 		EndIf
+
+		If QRY->B6_TIPO == "E'
+			cItem := Posicione("SD2",3,xFilial("SD2")+QRY->B6_DOC+QRY->B6_SERIE,"D2_ITEMCC")
+		Else
+			cItem := Posicione("SD1",1,xFilial("SD1")+QRY->B6_DOC+QRY->B6_SERIE+QRY->B6_CLIFOR+QRY->B6_LOJA,"D1_ITEMCTA")
+		EndIf
 	
-		If cCC < MV_PAR07 .Or. cCC > MV_PAR08
+		If cItem < MV_PAR07 .Or. cItem > MV_PAR08
 			DbSelectArea("QRY")
 			DbSkip()
 			Loop
@@ -269,6 +280,8 @@ Static Function Proc_Arq(cEmp)
 		TRB->SALDO    := QRY->B6_SALDO
 		TRB->EMPRESA  := cEmp
 	
+		TRB->ITEM     := cItem
+		TRB->DESCITEM := Posicione("CTD",1,xFilial("CTD")+TRB->ITEM,"CTD_DESC01")
 		TRB->CC       := cCC
 		TRB->DESC     := Posicione("CTT",1,xFilial("CTT")+TRB->CC,"CTT_DESC01")
 		TRB->EQSERIE  := QRY->B6_EQSERIE
@@ -292,8 +305,14 @@ Static Function Proc_Arq(cEmp)
 			Else
 				cCC := SB6->B6_CC //Posicione("SD1",1,xFilial("SD1")+QRY->B6_DOC+QRY->B6_SERIE+QRY->B6_CLIFOR+QRY->B6_LOJA,"D1_CC")
 			EndIf
+
+			If SB6->B6_TIPO == "E'
+				cItem := Posicione("SD2",3,xFilial("SD2")+QRY->B6_DOC+QRY->B6_SERIE,"D2_ITEMCC")
+			Else
+				cItem := Posicione("SD1",1,xFilial("SD1")+QRY->B6_DOC+QRY->B6_SERIE+QRY->B6_CLIFOR+QRY->B6_LOJA,"D1_ITEMCTA")
+			EndIf
 		
-			If cCC < MV_PAR07 .Or. cCC > MV_PAR08
+			If cItem < MV_PAR07 .Or. cItem > MV_PAR08
 				DbSelectArea("SB6")
 				DbSkip()
 				Loop
@@ -331,9 +350,11 @@ Static Function Proc_Arq(cEmp)
 			TRB->QUANT    := SB6->B6_QUANT
 			TRB->SALDO    := SB6->B6_SALDO
 			TRB->EMPRESA  := cEmp
-		
+			TRB->ITEM     := cItem
+			TRB->DESCITEM := Posicione("CTD",1,xFilial("CTD")+TRB->ITEM,"CTD_DESC01")
 			TRB->CC       := cCC
 			TRB->DESC     := Posicione("CTT",1,xFilial("CTT")+TRB->CC,"CTT_DESC01")
+			
 		
 			MsUnlock()
 		
@@ -377,6 +398,8 @@ Static Function MostraCons()
 	aBrowse := {}
 
 	AaDD(aBrowse,{"EMPRESA","","Empresa"})
+	AaDD(aBrowse,{"ITEM","","Item Ctb."})
+	AaDD(aBrowse,{"DESCITEM","","Descricao",""})
 	AaDD(aBrowse,{"CC","","C.Custo"})
 	AaDD(aBrowse,{"DESC","","Descricao",""})
 	AaDD(aBrowse,{"DTDIGIT","","Dt. Entrada",""})
@@ -497,7 +520,10 @@ Return .T.
 Static Function ExpCons()
 	Private aDadosExcel := {}
 
-	AaDd(aDadosExcel,{ "Empresa","C.Custo",;
+	AaDd(aDadosExcel,{ "Empresa",;
+	    "Item Ctb.",;
+		"Descricao",;
+        "C.Custo",;
 		"Descricao",;
 		"Dt.Movimentacao",;
 		"Tipo",;
@@ -522,7 +548,10 @@ Static Function ExpCons()
 
 	While TRB->(!EOF())
 	
-		AaDD( aDadosExcel, { TRB->EMPRESA,TRB->CC,;
+		AaDD( aDadosExcel, { TRB->EMPRESA,;
+			TRB->ITEM,;
+			TRB->DESCITEM,;
+			TRB->CC,;
 			TRB->DESC,;
 			Dtoc(TRB->DTDIGIT) ,;
 			TRB->TIPO,;
@@ -551,9 +580,9 @@ Static Function ExpCons()
 Return
 
 Static Function Run_Excel(aDadosExcel,nCol)
-	LOCAL cDirDocs   := MsDocPath()
+	LOCAL cDirDocs  := MsDocPath()
 	Local aStru		:= {}
-	Local cArquivo := CriaTrab(,.F.)
+	Local cArquivo  := CriaTrab(,.F.)
 	Local cPath		:= AllTrim(GetTempPath())
 	Local oExcelApp
 	Local nHandle
@@ -619,6 +648,8 @@ Static Function CriaArqTmp()
 	Local aCampos := {}
 
 	AaDd(aCampos,{"OK"       ,"C",  2,0})
+	AaDd(aCampos,{"ITEM"     ,"C",  9,0})
+	AaDd(aCampos,{"DESCITEM" ,"C", 20,0})
 	AaDd(aCampos,{"CC"       ,"C",  9,0})
 	AaDd(aCampos,{"DESC"     ,"C", 20,0})
 	AaDd(aCampos,{"DTDIGIT"  ,"D",  8,0})
@@ -784,8 +815,11 @@ Static Function ImpCons()
 				oPrn:Say(nLin+10,  910,TRB->PRODUTO  ,oArialNeg06 ,100)
 				oPrn:Say(nLin+10, 1060,TRB->DESCPRD  ,oArialNeg06 ,100)
 				oPrn:Say(nLin+10, 2010,Substr(TRB->EQSERIE,1,10)  ,oArialNeg04 ,100)
+						oPrn:Say(nLin+10, 2210,TRB->ITEM    ,oFont9 ,100)
+				oPrn:Say(nLin+10, 2305,Substr(TRB->DESCITEM,1,10) ,oArialNeg06 ,100)
 				oPrn:Say(nLin+10, 2210,TRB->CC     ,oFont9 ,100)
 				oPrn:Say(nLin+10, 2305,Substr(TRB->DESC,1,10) ,oArialNeg06 ,100)
+		
 				oPrn:Say(nLin+10, 2560,IF(TRB->PODER3=="1","R","D") ,oFont9 ,100)
 				oPrn:Say(nLin+10, 2610,TRB->DOC  ,oArialNeg06 ,100)
 				oPrn:Say(nLin+10, 2760,Dtoc(TRB->DTDIGIT)   ,oArialNeg06 ,100)
@@ -882,6 +916,8 @@ Static Function ImpCons()
 				oPrn:Say(nLin+10, 1120,TRB->LOJA     ,oArialNeg07 ,100)
 				oPrn:Say(nLin+10, 1220,TRB->NOME     ,oArialNeg07 ,100)
 			
+				oPrn:Say(nLin+10, 1710,TRB->ITEM    ,oFont9 ,100)
+				oPrn:Say(nLin+10, 1910,TRB->DESCITEM   ,oFont9 ,100)
 				oPrn:Say(nLin+10, 1710,TRB->CC     ,oFont9 ,100)
 				oPrn:Say(nLin+10, 1910,TRB->DESC   ,oFont9 ,100)
 				oPrn:Say(nLin+10, 2410,TRB->EQSERIE  ,oArialNeg07 ,100)				
@@ -965,6 +1001,8 @@ Static Function ImpCons()
 				oPrn:line(nLin,3100,nLin+60,3100)
 			
 				If lPri
+					oPrn:Say(nLin+10,  110,TRB->ITEM      ,oFont9 ,100)
+					oPrn:Say(nLin+10,  260,TRB->DESCITEM     ,oFont9 ,100)
 					oPrn:Say(nLin+10,  110,TRB->CC       ,oFont9 ,100)
 					oPrn:Say(nLin+10,  260,TRB->DESC     ,oFont9 ,100)
 					lPri := .F.
@@ -1167,3 +1205,19 @@ Static Function Escolha()
 	ACTIVATE DIALOG oDlg2 CENTER
 
 Return nRadio
+
+Static Function GatItem(cItem)
+
+Local aArea     := GetArea()
+Local cCusto    := ""
+	
+DbSelectArea("CTD")
+DbSetOrder(1)
+
+If DbSeek(xFilial("CTD") + cItem)
+	cCusto      :=  CTD->CTD_CUSTO
+EndIf
+
+RestArea( aArea )
+
+Return cCusto
