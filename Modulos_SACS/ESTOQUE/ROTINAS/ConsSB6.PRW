@@ -133,6 +133,9 @@ Static Function Proc_Arq(cEmp)
 	cArq   := "sx2"+cEmp+"0"
 	cAliasTrb := "sx2trb"
 
+	If Empty(cCustoFim)
+		cCustoFim := "ZZZZZ"
+	EndIf
 	cPath := GetSrvProfString("Startpath","")
 	cArq := cPath+cArq
 
