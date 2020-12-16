@@ -570,13 +570,13 @@ Static Function ExpCons()
 			Transform(TRB->SALDO,"@e 99,999,999.99") }  )
 	
 		DbSelectArea("TRB")
-		DbSkip()
+		DbSkip()  
 	
 	End
 
 	Processa({||Run_Excel(aDadosExcel,nCol)},"Gerando a Integração com o Excel...")
 
-	MsgInfo("Exportacao efetuada com sucesso..")
+	MsgInfo("Exportacao efetuada com sucesso.")
 
 	TRB->(DbGotop())
 
