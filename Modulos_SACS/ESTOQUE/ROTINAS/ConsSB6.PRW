@@ -537,7 +537,7 @@ Static Function ExpCons()
 		"Loja",;
 		"Razao Social",;
 		"Documento",;
-		"Mov",;
+		"Mov.",;
 		"Quantidade",;
 		"Saldo" })
 
